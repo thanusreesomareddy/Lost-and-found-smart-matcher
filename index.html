@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✨ Lost & Found • Smart Matching System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(145deg, #f5f7ff 0%, #e9eef5 100%);
+            min-height: 100vh;
+            transition: background 0.3s, color 0.2s;
+        }
+        body.dark {
+            background: linear-gradient(145deg, #0f172a 0%, #1e293b 100%);
+            color: #e2e8f0;
+        }
+        .panel {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(12px);
+            border-radius: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            transition: all 0.2s;
+        }
+        body.dark .panel {
+            background: rgba(30, 41, 59, 0.75);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        .navbar {
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: blur(16px);
+            padding: 0.8rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        body.dark .navbar { background: rgba(15,23,42,0.85); border-bottom-color: rgba(255,255,255,0.05); }
+        .logo { display: flex; align-items: center; gap: 12px; }
+        .logo-icon {
+            width: 40px; height: 40px;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .logo-icon i { color: white; font-size: 1.5rem; }
+        .logo-text { font-size: 1.6rem; font-weight: 700; background: linear-gradient(135deg, #4f46e5, #7c3aed); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .container { max-width: 1400px; margin: 2rem auto; padding: 0 5%; }
+        .auth-card { max-width: 480px; margin: 0 auto; }
+        .input-group { margin-bottom: 1rem; position: relative; }
+        .input-group i { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: #4f46e5; }
+        input, select, textarea {
+            width: 100%;
+            padding: 0.8rem 1rem 0.8rem 2.8rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 1.5rem;
+            font-family: inherit;
+            background: white;
+            transition: 0.2s;
+        }
+        body.dark input, body.dark select, body.dark textarea { background: #1e293b; border-color: #334155; color: #f1f5f9; }
+        .btn-primary {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px -5px rgba(79,70,229,0.4); }
+        .btn-secondary { background: #10b981; color: white; border: none; padding: 0.5rem 1rem; border-radius: 2rem; cursor: pointer; font-weight: 500; }
+        .btn-danger { background: #ef4444; color: white; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+        .stat-card { text-align: center; padding: 1rem; }
+        .filter-bar { display: flex; gap: 0.8rem; flex-wrap: wrap; align-items: center; margin-bottom: 1rem; }
+        .items-grid, .matches-grid, .claims-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px,1fr)); gap: 1.5rem; margin: 1.5rem 0; }
+        .item-card, .match-card, .claim-card {
+            background: white;
+            border-radius: 1.5rem;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transition: all 0.2s;
+        }
+        body.dark .item-card, body.dark .match-card, body.dark .claim-card { background: #1e293b; }
+        .item-card:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -12px rgba(0,0,0,0.15); }
+        .item-image { height: 160px; background-size: cover; background-position: center; position: relative; display: flex; align-items: center; justify-content: center; background: #eef2ff; }
+        .badge { position: absolute; top: 12px; right: 12px; padding: 4px 12px; border-radius: 40px; font-size: 0.7rem; font-weight: bold; color: white; }
+        .badge-lost { background: #ef4444; }
+        .badge-found { background: #10b981; }
+        .tabs { display: flex; gap: 0.5rem; flex-wrap: wrap; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem; margin-bottom: 1rem; }
+        .tab-btn { background: none; border: none; padding: 0.5rem 1rem; border-radius: 2rem; cursor: pointer; font-weight: 500; transition: 0.1s; }
+        .tab-btn.active { background: #4f46e5; color: white; }
+        .notification { position: fixed; bottom: 20px; right: 20px; background: white; border-radius: 1rem; padding: 1rem 1.5rem; box-shadow: 0 20px 25px -12px rgba(0,0,0,0.2); border-left: 5px solid #4f46e5; z-index: 1000; animation: slideIn 0.2s ease; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(100px); } to { opacity: 1; transform: translateX(0); } }
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
+        .modal-content { background: white; border-radius: 2rem; padding: 2rem; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; }
+        body.dark .modal-content { background: #1e293b; }
+        .user-avatar { width: 42px; height: 42px; background: linear-gradient(135deg,#4f46e5,#7c3aed); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; }
+        .reporter-info { display: flex; gap: 0.8rem; align-items: center; margin-top: 1rem; padding-top: 0.8rem; border-top: 1px solid #eef2ff; }
+        .points-badge { background: #fbbf24; color: #0f172a; padding: 2px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: bold; }
+        .admin-panel { margin-top: 2rem; }
+        @media (max-width: 700px) { .container { padding: 0 1rem; } }
+        .report-type-buttons { display: flex; gap: 1rem; margin-bottom: 1.5rem; }
+        .report-type-btn { flex: 1; padding: 0.7rem; border: none; background: #eef2ff; border-radius: 2rem; font-weight: 600; cursor: pointer; text-align: center; transition: 0.2s; }
+        .report-type-btn.active { background: #4f46e5; color: white; }
+        body.dark .report-type-btn { background: #334155; color: #e2e8f0; }
+        body.dark .report-type-btn.active { background: #4f46e5; color: white; }
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <div class="logo"><div class="logo-icon"><i class="fas fa-handshake"></i></div><span class="logo-text">Lost & Found</span></div>
+    <div style="display: flex; gap: 1rem; align-items: center;">
+        <button id="themeToggle" class="btn-secondary" style="background:transparent; border:1px solid #cbd5e1;"><i class="fas fa-moon"></i></button>
+        <div id="userProfile" style="display:none; display: flex; gap: 1rem; align-items: center;">
+            <div class="user-info" style="text-align:right"><div id="userFullName" style="font-weight:600"></div><div id="userPoints" class="points-badge">⭐ 0 pts</div></div>
+            <div class="user-avatar" id="userAvatar"></div>
+            <button class="btn-primary" onclick="logout()" style="background:#ef4444; padding:0.4rem 1rem;"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        </div>
+    </div>
+</nav>
+<div class="container">
+    <div class="panel" style="margin-bottom: 1.5rem; padding: 2rem; text-align: center;">
+        <h1>🔍 Lost Something? Found Something? 🤝</h1>
+        <p>Smart matching • Claims & rewards • Admin moderation</p>
+    </div>
+    <!-- Auth Section -->
+    <div id="authSection" style="display: flex; justify-content: center;">
+        <div class="panel auth-card" style="padding: 2rem;">
+            <div class="tabs" style="justify-content: center;"><button class="tab-btn active" onclick="showLogin()">🔐 Login</button><button class="tab-btn" onclick="showRegister()">📝 Register</button></div>
+            <div id="loginForm"><div class="input-group"><i class="fas fa-envelope"></i><input type="email" id="loginEmail" placeholder="Email"></div><div class="input-group"><i class="fas fa-lock"></i><input type="password" id="loginPassword" placeholder="Password"></div><button class="btn-primary" onclick="login()" style="width:100%"><i class="fas fa-sign-in-alt"></i> Login</button></div>
+            <div id="registerForm" style="display:none;"><div class="input-group"><i class="fas fa-user"></i><input type="text" id="regName" placeholder="Full name"></div><div class="input-group"><i class="fas fa-id-card"></i><input type="text" id="regStudentId" placeholder="Student ID"></div><div class="input-group"><i class="fas fa-envelope"></i><input type="email" id="regEmail" placeholder="Email"></div><div class="input-group"><i class="fas fa-phone"></i><input type="tel" id="regPhone" placeholder="Phone"></div><div class="input-group"><i class="fas fa-lock"></i><input type="password" id="regPassword" placeholder="Password"></div><button class="btn-primary" onclick="register()" style="width:100%"><i class="fas fa-user-plus"></i> Create Account</button></div>
+            <p class="note" style="font-size:0.7rem; margin-top:1rem; text-align:center;">✨ First user becomes admin</p>
+        </div>
+    </div>
+    <!-- Main App -->
+    <div id="mainApp" style="display:none;">
+        <!-- Profile Panel -->
+        <div class="panel" style="margin-bottom: 1.5rem; padding: 1.5rem;">
+            <div style="display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap;">
+                <div id="profileAvatar" class="user-avatar" style="width:70px;height:70px;font-size:2rem;"></div>
+                <div><h2 id="profileName"></h2><p><i class="fas fa-envelope"></i> <span id="profileEmail"></span> &nbsp; <i class="fas fa-phone"></i> <span id="profilePhone"></span><br><i class="fas fa-id-card"></i> <span id="profileId"></span> &nbsp; <span id="profilePoints" class="points-badge">⭐ 0 pts</span></p></div>
+            </div>
+        </div>
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="panel stat-card"><i class="fas fa-search" style="font-size:2rem; color:#4f46e5;"></i><div><h3 id="lostCount">0</h3><p>Lost Items</p></div></div>
+            <div class="panel stat-card"><i class="fas fa-check-circle" style="font-size:2rem; color:#10b981;"></i><div><h3 id="foundCount">0</h3><p>Found Items</p></div></div>
+            <div class="panel stat-card"><i class="fas fa-handshake" style="font-size:2rem; color:#8b5cf6;"></i><div><h3 id="matchCount">0</h3><p>Matches</p></div></div>
+            <div class="panel stat-card"><i class="fas fa-star" style="font-size:2rem; color:#fbbf24;"></i><div><h3 id="pointsTotal">0</h3><p>Your Points</p></div></div>
+        </div>
+        <!-- Main Tabs -->
+        <div class="panel" style="padding: 0.5rem 1rem;">
+            <div class="tabs" style="margin-bottom:0; border-bottom:none; justify-content: center;">
+                <button class="tab-btn active" onclick="switchTab('reports')">📋 Reports</button>
+                <button class="tab-btn" onclick="switchTab('matches')">🤝 Matches</button>
+                <button class="tab-btn" onclick="switchTab('claims')">📦 Claims</button>
+                <button class="tab-btn" onclick="switchTab('notifications')">🔔 Notifications <span id="notifBadge" style="background:#ef4444; border-radius:50%; padding:0 6px; font-size:0.7rem;">0</span></button>
+                <button class="tab-btn" onclick="switchTab('dashboard')">📊 Dashboard</button>
+            </div>
+        </div>
+        <!-- Filters with Refresh Button -->
+        <div class="panel filter-bar" style="margin: 1rem 0; padding: 1rem;">
+            <input type="text" id="filterSearch" placeholder="🔍 Search items..." style="flex:1;">
+            <select id="filterCategory"><option value="">All Categories</option><option>documents</option><option>electronics</option><option>books</option><option>accessories</option><option>clothing</option><option>keys</option><option>other</option></select>
+            <select id="filterType"><option value="">All Types</option><option value="lost">Lost</option><option value="found">Found</option></select>
+            <button class="btn-secondary" onclick="exportData()"><i class="fas fa-download"></i> Export</button>
+            <button class="btn-secondary" onclick="refreshAll()"><i class="fas fa-sync-alt"></i> Refresh</button>
+            <button class="btn-secondary btn-danger" onclick="clearAllData()" style="background:#ef4444;"><i class="fas fa-trash-alt"></i> Clear All Data</button>
+        </div>
+        <!-- Panels content -->
+        <div id="reportsPanel" class="items-grid"></div>
+        <div id="matchesPanel" class="matches-grid" style="display:none;"></div>
+        <div id="claimsPanel" class="claims-grid" style="display:none;"></div>
+        <div id="notificationsPanel" class="panel" style="display:none; padding:1rem;"><div id="notificationsList"></div></div>
+        <div id="dashboardPanel" class="panel" style="display:none; padding:1rem;"><h3>📈 Activity</h3><canvas id="activityChart" width="300" height="150" style="max-width:100%"></canvas><h3>🏆 Leaderboard</h3><div id="leaderboard"></div><h3>📍 Hotspots</h3><div style="background:#eef2ff; border-radius:1rem; padding:1rem; text-align:center;">📍 Library (5), Cafeteria (3), Parking (2)</div></div>
+        <!-- Report Form Panel -->
+        <div class="panel" style="margin: 1.5rem 0; padding: 1.5rem;">
+            <div class="panel-header" style="padding:0 0 1rem 0;"><i class="fas fa-pen-alt"></i> Report an Item</div>
+            <div class="report-type-buttons">
+                <button id="reportLostBtn" class="report-type-btn active" onclick="setItemType('lost')">😞 I Lost Something</button>
+                <button id="reportFoundBtn" class="report-type-btn" onclick="setItemType('found')">😊 I Found Something</button>
+            </div>
+            <div style="display:grid; gap:1rem;">
+                <input type="text" id="itemName" placeholder="Item Name *">
+                <select id="itemCategory"><option value="">Category *</option><option value="documents">Documents</option><option value="electronics">Electronics</option><option value="books">Books</option><option value="accessories">Accessories</option><option value="clothing">Clothing</option><option value="keys">Keys</option><option value="other">Other</option></select>
+                <textarea id="itemDescription" rows="2" placeholder="Description *"></textarea>
+                <input type="text" id="itemLocation" placeholder="Location (e.g., Library) *">
+                <input type="date" id="itemDate">
+                <div class="upload-area" onclick="document.getElementById('itemImage').click()" style="border:1px dashed #4f46e5; border-radius:1rem; padding:1rem; text-align:center; cursor:pointer;"><i class="fas fa-cloud-upload-alt"></i> Upload image <input type="file" id="itemImage" accept="image/*" style="display:none" onchange="previewImage(event)"></div>
+                <img id="imagePreview" style="max-width:100px; display:none; border-radius:0.5rem;">
+                <label><input type="checkbox" id="anonymousReport"> Report anonymously</label>
+                <button class="btn-primary" onclick="reportItem()"><i class="fas fa-paper-plane"></i> Submit Report</button>
+            </div>
+        </div>
+        <!-- Admin Panel -->
+        <div id="adminPanel" class="panel admin-panel" style="display:none; padding:1rem;">
+            <h3>🛡️ Admin Moderation</h3>
+            <div class="tabs"><button class="tab-btn" onclick="showAdminTab('pending')">Pending</button><button class="tab-btn" onclick="showAdminTab('flagged')">Flagged</button><button class="tab-btn" onclick="showAdminTab('users')">Users</button><button class="tab-btn" onclick="showAdminTab('keywords')">Keywords</button><button class="tab-btn" onclick="showAdminTab('claims')">Claims</button></div>
+            <div id="adminContent">Loading...</div>
+        </div>
+    </div>
+</div>
+<!-- Modals -->
+<div id="contactModal" class="modal"><div class="modal-content"><h3>📞 Contact Details</h3><div id="contactDetails"></div><button class="btn-primary" onclick="closeModal()">Close</button></div></div>
+<div id="claimModal" class="modal"><div class="modal-content"><h3>📦 Claim Item</h3><p>Claiming: <span id="claimItemName"></span></p><textarea id="claimProof" placeholder="Proof of ownership (receipt, photo description)"></textarea><button class="btn-primary" onclick="submitClaim()">Submit Claim</button><button onclick="closeModal()">Cancel</button></div></div>
+<div id="notificationContainer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+// ----------------------------- DATA LAYER -----------------------------
+function getUsers() { return JSON.parse(localStorage.getItem('users') || '[]'); }
+function saveUsers(u) { localStorage.setItem('users', JSON.stringify(u)); }
+function getItems() { return JSON.parse(localStorage.getItem('items') || '[]'); }
+function saveItems(i) { localStorage.setItem('items', JSON.stringify(i)); }
+function getClaims() { return JSON.parse(localStorage.getItem('claims') || '[]'); }
+function saveClaims(c) { localStorage.setItem('claims', JSON.stringify(c)); }
+function getNotifications() { return JSON.parse(localStorage.getItem('notifications') || '[]'); }
+function saveNotifications(n) { localStorage.setItem('notifications', JSON.stringify(n)); }
+function getKeywords() { return JSON.parse(localStorage.getItem('bannedKeywords') || '["gun","guns","pistol","rifle","weapon","drugs","cocaine","heroin","meth","weed","knife","explosive"]'); }
+function saveKeywords(k) { localStorage.setItem('bannedKeywords', JSON.stringify(k)); }
+function getFlagged() { return JSON.parse(localStorage.getItem('flagged') || '[]'); }
+function saveFlagged(f) { localStorage.setItem('flagged', JSON.stringify(f)); }
+let currentUser = null, allItems = [], currentItemType = 'lost';
+
+function addNotification(userId, msg) { let n = getNotifications(); n.push({ id: Date.now(), userId, message: msg, read: false, timestamp: new Date().toISOString() }); saveNotifications(n); if(currentUser && currentUser.id===userId) updateNotifBadge(); }
+function updateNotifBadge() { let unread = getNotifications().filter(n=>n.userId===currentUser?.id && !n.read).length; document.getElementById('notifBadge').innerText = unread; }
+
+function addPoints(userId, points, reason) { let users = getUsers(); let u = users.find(u=>u.id===userId); if(u){ u.points = (u.points||0)+points; saveUsers(users); addNotification(userId, `🎉 +${points} pts for ${reason}`); if(currentUser?.id===userId) updatePointsUI(); } }
+function updatePointsUI() { if(currentUser){ document.getElementById('profilePoints').innerHTML = `⭐ ${currentUser.points||0} pts`; document.getElementById('pointsTotal').innerText = currentUser.points||0; } }
+
+// ----------------------------- CLEAR ALL DATA -----------------------------
+function clearAllData() {
+    if(confirm('⚠️ WARNING: This will delete ALL users, items, flagged reports, claims, notifications, and reset banned keywords. You will be logged out. Are you sure?')) {
+        localStorage.removeItem('users');
+        localStorage.removeItem('items');
+        localStorage.removeItem('claims');
+        localStorage.removeItem('notifications');
+        localStorage.removeItem('flagged');
+        localStorage.removeItem('bannedKeywords');
+        localStorage.removeItem('currentUser');
+        const defaultKeywords = ["gun","guns","pistol","rifle","weapon","drugs","cocaine","heroin","meth","weed","knife","explosive"];
+        saveKeywords(defaultKeywords);
+        showNotification('🗑️ All data cleared. Refresh the page to start fresh.', 'success');
+        setTimeout(() => location.reload(), 1500);
+    }
+}
+
+// ----------------------------- AUTH -----------------------------
+function showLogin() { document.getElementById('loginForm').style.display='block'; document.getElementById('registerForm').style.display='none'; }
+function showRegister() { document.getElementById('loginForm').style.display='none'; document.getElementById('registerForm').style.display='block'; }
+function register() {
+    let name=document.getElementById('regName').value.trim(), sid=document.getElementById('regStudentId').value.trim(), email=document.getElementById('regEmail').value.trim(), phone=document.getElementById('regPhone').value.trim(), pwd=document.getElementById('regPassword').value;
+    if(!name||!sid||!email||!phone||!pwd) return showNotification('All fields required','error');
+    let users=getUsers();
+    if(users.find(u=>u.email===email)) return showNotification('Email exists','error');
+    let isAdmin=users.length===0;
+    users.push({ id:Date.now().toString(), name, studentId:sid, email, phone, password:pwd, isAdmin, isBlocked:false, points:0 });
+    saveUsers(users);
+    showNotification('Registered! Please login','success');
+    showLogin();
+}
+function login() {
+    let email=document.getElementById('loginEmail').value.trim(), pwd=document.getElementById('loginPassword').value;
+    let users=getUsers(); let user=users.find(u=>u.email===email);
+    if(!user||user.password!==pwd) return showNotification('Invalid credentials','error');
+    if(user.isBlocked) return showNotification('Account blocked','error');
+    currentUser=user;
+    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+    document.getElementById('authSection').style.display='none';
+    document.getElementById('mainApp').style.display='block';
+    document.getElementById('userProfile').style.display='flex';
+    document.getElementById('userFullName').innerText=user.name;
+    document.getElementById('userAvatar').innerText=user.name.charAt(0);
+    document.getElementById('profileName').innerText=user.name;
+    document.getElementById('profileEmail').innerText=user.email;
+    document.getElementById('profilePhone').innerText=user.phone;
+    document.getElementById('profileId').innerText=user.studentId;
+    document.getElementById('profileAvatar').innerText=user.name.charAt(0);
+    updatePointsUI();
+    if(user.isAdmin) document.getElementById('adminPanel').style.display='block';
+    refreshAll();
+    updateNotifBadge();
+    showNotification(`Welcome ${user.name}!`);
+}
+function logout() { currentUser=null; localStorage.removeItem('currentUser'); location.reload(); }
+
+// ----------------------------- ITEMS & MATCHING -----------------------------
+function containsBanned(t) { let kw=getKeywords(); return kw.some(k=>t.toLowerCase().includes(k.toLowerCase())); }
+function reportItem() {
+    if(!currentUser) return;
+    let name=document.getElementById('itemName').value.trim(), cat=document.getElementById('itemCategory').value, desc=document.getElementById('itemDescription').value.trim(), loc=document.getElementById('itemLocation').value.trim(), date=document.getElementById('itemDate').value, anonymous=document.getElementById('anonymousReport').checked;
+    if(!name||!cat||!desc||!loc||!date) return showNotification('Fill all fields','error');
+    if(containsBanned(name+' '+desc)){ let f=getFlagged(); f.push({id:Date.now(), userId:currentUser.id, userName:currentUser.name, itemName:name}); saveFlagged(f); showNotification('Illegal content blocked','error'); return; }
+    let img=document.getElementById('itemImage').files[0];
+    let save=(url)=>{
+        let items=getItems();
+        items.push({ id:Date.now().toString(), type:currentItemType, name, category:cat, description:desc, location:loc, date, imageUrl:url||null, reporterId:currentUser.id, reporterName:anonymous?'Anonymous':currentUser.name, reporterPhone:anonymous?null:currentUser.phone, reporterEmail:anonymous?null:currentUser.email, status:'pending', timestamp:new Date().toISOString() });
+        saveItems(items);
+        document.getElementById('itemName').value=''; document.getElementById('itemCategory').value=''; document.getElementById('itemDescription').value=''; document.getElementById('itemLocation').value=''; document.getElementById('itemDate').value=''; document.getElementById('itemImage').value=''; document.getElementById('imagePreview').style.display='none';
+        showNotification('Report submitted, pending admin approval','success');
+        refreshAll();
+    };
+    if(img){ let r=new FileReader(); r.onload=e=>save(e.target.result); r.readAsDataURL(img); } else save(null);
+}
+function previewImage(e){ let file=e.target.files[0]; if(file){ let r=new FileReader(); r.onload=ev=>{ document.getElementById('imagePreview').src=ev.target.result; document.getElementById('imagePreview').style.display='block'; }; r.readAsDataURL(file); } }
+function setItemType(t){ 
+    currentItemType=t; 
+    const lostBtn = document.getElementById('reportLostBtn');
+    const foundBtn = document.getElementById('reportFoundBtn');
+    if(t === 'lost'){ lostBtn.classList.add('active'); foundBtn.classList.remove('active'); }
+    else { foundBtn.classList.add('active'); lostBtn.classList.remove('active'); }
+}
+
+function refreshAll(){ allItems=getItems(); let approved=allItems.filter(i=>i.status==='approved'); let fSearch=document.getElementById('filterSearch').value.toLowerCase(), fCat=document.getElementById('filterCategory').value, fType=document.getElementById('filterType').value; let filtered=approved.filter(i=>(!fSearch||i.name.toLowerCase().includes(fSearch)||i.description.toLowerCase().includes(fSearch)) && (!fCat||i.category===fCat) && (!fType||i.type===fType)); document.getElementById('lostCount').innerText=approved.filter(i=>i.type==='lost').length; document.getElementById('foundCount').innerText=approved.filter(i=>i.type==='found').length; displayItems(filtered); findMatches(); displayClaims(); displayNotifications(); updateLeaderboard(); updatePointsUI(); }
+function displayItems(items){ let grid=document.getElementById('reportsPanel'); if(!items.length){ grid.innerHTML='<div class="panel" style="padding:2rem; text-align:center;">📭 No approved items yet.</div>'; return; } grid.innerHTML=items.map(item=>`<div class="item-card"><div class="item-image" style="${item.imageUrl?`background-image:url('${item.imageUrl}');background-size:cover;`:'background:linear-gradient(135deg,#4f46e5,#7c3aed);display:flex;align-items:center;justify-content:center;color:white;font-size:2rem;'}">${!item.imageUrl?`<i class="fas fa-${item.type==='lost'?'frown':'smile'}"></i>`:''}<div class="badge ${item.type==='lost'?'badge-lost':'badge-found'}">${item.type.toUpperCase()}</div></div><div class="item-content" style="padding:1rem;"><span style="background:#eef2ff; padding:2px 12px; border-radius:20px; font-size:0.7rem;">${item.category}</span><h3 style="margin:0.5rem 0">${escapeHtml(item.name)}</h3><p>${escapeHtml(item.description)}</p><p><i class="fas fa-map-marker-alt"></i> ${item.location} | ${item.date}</p><div class="reporter-info"><div class="user-avatar" style="width:30px;height:30px;font-size:0.8rem;">${(item.reporterName||'?').charAt(0)}</div><div><strong>${escapeHtml(item.reporterName)}</strong>${item.reporterPhone?`<br>📞 ${item.reporterPhone}`:''}</div></div>${item.type==='found' && currentUser?`<button class="btn-secondary" style="margin-top:0.5rem;" onclick="openClaimModal('${item.id}','${escapeHtml(item.name)}')">📦 Claim this item</button>`:''}</div></div>`).join(''); }
+function findMatches(){ let approved=allItems.filter(i=>i.status==='approved'); let losts=approved.filter(i=>i.type==='lost'), founds=approved.filter(i=>i.type==='found'); let matches=[]; for(let lost of losts) for(let found of founds){ let score=0, reasons=[]; if(lost.name.toLowerCase()===found.name.toLowerCase()){score+=40; reasons.push('Exact name');} else if(lost.name.toLowerCase().includes(found.name.toLowerCase())||found.name.toLowerCase().includes(lost.name.toLowerCase())){score+=20; reasons.push('Similar name');} if(lost.category===found.category){score+=30; reasons.push('Same category');} if(lost.location.toLowerCase()===found.location.toLowerCase()){score+=20; reasons.push('Same location');} let common=lost.description.toLowerCase().split(/\s+/).filter(w=>found.description.toLowerCase().includes(w)&&w.length>3); if(common.length){score+=Math.min(common.length*5,20); reasons.push(`Keywords: ${common.slice(0,2).join(',')}`);} if(score>=30) matches.push({lost,found,score:Math.min(score,100),reasons}); } matches.sort((a,b)=>b.score-a.score); document.getElementById('matchCount').innerText=matches.length; let grid=document.getElementById('matchesPanel'); if(!matches.length){grid.innerHTML='<div class="panel" style="padding:2rem;">🤝 No matches yet.</div>'; return;} grid.innerHTML=matches.slice(0,10).map(m=>`<div class="match-card" style="padding:1rem;"><div style="display:flex; justify-content:space-between;"><b>Potential Match</b><span class="badge" style="background:#10b981; position:static;">${m.score}%</span></div><div style="display:flex; gap:1rem; margin:0.5rem 0;"><div><small>Lost:</small><br><strong>${escapeHtml(m.lost.name)}</strong><br>${m.lost.location}</div><div><small>Found:</small><br><strong>${escapeHtml(m.found.name)}</strong><br>${m.found.location}</div></div><div>${m.reasons.map(r=>`<span style="background:#eef2ff; padding:2px 8px; border-radius:20px; font-size:0.7rem;">✓ ${r}</span>`).join('')}</div><button class="btn-primary" style="margin-top:0.5rem;" onclick="showContact('${m.lost.reporterId}','${m.found.reporterId}')">📞 Contact Both</button></div>`).join(''); }
+function showContact(lid,fid){ let users=getUsers(); let lost=users.find(u=>u.id===lid), found=users.find(u=>u.id===fid); if(!lost||!found) return; document.getElementById('contactDetails').innerHTML=`<div><h4>😞 Owner</h4><p>${lost.name}<br>${lost.phone}<br>${lost.email}</p></div><div><h4>😊 Finder</h4><p>${found.name}<br>${found.phone}<br>${found.email}</p></div>`; document.getElementById('contactModal').style.display='flex'; }
+function closeModal(){ document.querySelectorAll('.modal').forEach(m=>m.style.display='none'); }
+
+// ----------------------------- CLAIMS -----------------------------
+let currentClaimItemId=null;
+function openClaimModal(itemId, itemName){ currentClaimItemId=itemId; document.getElementById('claimItemName').innerText=itemName; document.getElementById('claimModal').style.display='flex'; }
+function submitClaim(){ let proof=document.getElementById('claimProof').value; if(!proof) return showNotification('Proof required','error'); let claims=getClaims(); let existing = claims.find(c=>c.itemId===currentClaimItemId && c.claimantId===currentUser.id && c.status!=='rejected');
+    if(existing) return showNotification('You already claimed this item','error');
+    claims.push({ id:Date.now().toString(), itemId:currentClaimItemId, claimantId:currentUser.id, claimantName:currentUser.name, proof, status:'pending', timestamp:new Date().toISOString() }); saveClaims(claims); let item=allItems.find(i=>i.id===currentClaimItemId); if(item) addNotification(item.reporterId, `New claim on "${item.name}" by ${currentUser.name}`); closeModal(); showNotification('Claim submitted for review'); refreshAll(); }
+function displayClaims(){ let claims=getClaims(); let userClaims=claims.filter(c=>c.claimantId===currentUser?.id || allItems.find(i=>i.id===c.itemId)?.reporterId===currentUser?.id); let grid=document.getElementById('claimsPanel'); if(!userClaims.length){ grid.innerHTML='<div class="panel" style="padding:2rem;">📦 No claims yet.</div>'; return; } grid.innerHTML=userClaims.map(c=>{ let item=allItems.find(i=>i.id===c.itemId); return `<div class="claim-card" style="padding:1rem;"><h4>${escapeHtml(item?.name||'Item')}</h4><p>Claimant: ${c.claimantName}<br>Status: <strong>${c.status}</strong><br>Proof: ${c.proof.substring(0,80)}...</p>${c.status==='pending' && currentUser?.isAdmin?`<button class="btn-secondary" onclick="approveClaim('${c.id}')">✅ Approve</button> <button class="btn-secondary" style="background:#ef4444;" onclick="rejectClaim('${c.id}')">❌ Reject</button>`:''}</div>`; }).join(''); }
+function approveClaim(id){ let claims=getClaims(); let claim=claims.find(c=>c.id===id); if(claim){ claim.status='approved'; saveClaims(claims); let item=allItems.find(i=>i.id===claim.itemId); if(item){ addNotification(claim.claimantId, `Claim for "${item.name}" approved! Contact owner.`); addNotification(item.reporterId, `Claim approved for "${item.name}". Contact claimant.`); addPoints(claim.claimantId, 50, 'successful claim'); } showNotification('Claim approved'); refreshAll(); } }
+function rejectClaim(id){ let claims=getClaims(); let claim=claims.find(c=>c.id===id); if(claim){ claim.status='rejected'; saveClaims(claims); showNotification('Claim rejected'); refreshAll(); } }
+
+// ----------------------------- NOTIFICATIONS & DASHBOARD -----------------------------
+function displayNotifications(){ let notifs=getNotifications().filter(n=>n.userId===currentUser?.id).sort((a,b)=>b.timestamp.localeCompare(a.timestamp)); let container=document.getElementById('notificationsList'); if(!notifs.length){ container.innerHTML='<p>No notifications.</p>'; return; } container.innerHTML=notifs.map(n=>`<div style="padding:0.8rem; border-bottom:1px solid #eef2ff;"><p>${n.message}</p><small>${new Date(n.timestamp).toLocaleString()}</small></div>`).join(''); notifs.forEach(n=>n.read=true); saveNotifications(getNotifications()); updateNotifBadge(); }
+function updateLeaderboard(){ let users=getUsers().sort((a,b)=>(b.points||0)-(a.points||0)).slice(0,5); let html='<ol>'; users.forEach(u=>html+=`<li>${escapeHtml(u.name)} - ⭐ ${u.points||0} pts</li>`); html+='</ol>'; document.getElementById('leaderboard').innerHTML=html; }
+let chart; function drawActivity(){ let ctx=document.getElementById('activityChart').getContext('2d'); let items=getItems().filter(i=>i.reporterId===currentUser?.id); let byDate={}; items.forEach(i=>{ let d=i.timestamp.split('T')[0]; byDate[d]=(byDate[d]||0)+1; }); let labels=Object.keys(byDate).slice(-7); let data=labels.map(l=>byDate[l]); if(chart) chart.destroy(); chart=new Chart(ctx,{ type:'bar', data:{ labels, datasets:[{ label:'Reports', data, backgroundColor:'#4f46e5' }] } }); }
+function switchTab(tab){ document.getElementById('reportsPanel').style.display=tab==='reports'?'grid':'none'; document.getElementById('matchesPanel').style.display=tab==='matches'?'grid':'none'; document.getElementById('claimsPanel').style.display=tab==='claims'?'grid':'none'; document.getElementById('notificationsPanel').style.display=tab==='notifications'?'block':'none'; document.getElementById('dashboardPanel').style.display=tab==='dashboard'?'block':'none'; if(tab==='claims') displayClaims(); if(tab==='notifications') displayNotifications(); if(tab==='dashboard') drawActivity(); }
+
+// ----------------------------- ADMIN -----------------------------
+function showAdminTab(tab){ if(!currentUser?.isAdmin) return; let container=document.getElementById('adminContent'); if(tab==='pending'){ let pending=getItems().filter(i=>i.status==='pending'); container.innerHTML=pending.map(i=>`<div class="panel" style="padding:0.8rem; margin-bottom:0.5rem;"><b>${i.name}</b> by ${i.reporterName}<br><button class="btn-secondary" onclick="approveItem('${i.id}')">Approve</button> <button class="btn-secondary" style="background:#ef4444;" onclick="rejectItem('${i.id}')">Reject</button></div>`).join('')||'No pending.'; }
+    else if(tab==='flagged'){ let flagged=getFlagged(); container.innerHTML=flagged.map(f=>`<div><b>${f.itemName}</b> by ${f.userName}</div>`).join('')||'None.'; }
+    else if(tab==='users'){ let users=getUsers(); container.innerHTML=users.map(u=>`<div>${u.name} (${u.email}) - ${u.isBlocked?'Blocked':'Active'} <button class="btn-secondary" onclick="toggleBlock('${u.id}')">${u.isBlocked?'Unblock':'Block'}</button></div>`).join(''); }
+    else if(tab==='keywords'){ let kw=getKeywords(); container.innerHTML=`<div>${kw.map(k=>`<span style="background:#ef4444; color:white; padding:4px 12px; border-radius:40px; margin:4px; display:inline-block;">${k} <button onclick="removeKw('${k}')" style="background:none; border:none; color:white;">x</button></span>`).join('')}</div><input id="newKw" placeholder="Add keyword"><button class="btn-primary" onclick="addKw()">Add</button>`; }
+    else if(tab==='claims'){ let pendingClaims=getClaims().filter(c=>c.status==='pending'); container.innerHTML=pendingClaims.map(c=>{ let item=allItems.find(i=>i.id===c.itemId); return `<div>Claim on ${item?.name} by ${c.claimantName}<br>Proof: ${c.proof}<br><button class="btn-secondary" onclick="approveClaim('${c.id}')">Approve</button> <button class="btn-secondary" style="background:#ef4444;" onclick="rejectClaim('${c.id}')">Reject</button></div>`; }).join('')||'No pending claims.'; }
+}
+function approveItem(id){ let items=getItems(); let i=items.find(i=>i.id===id); if(i){ i.status='approved'; saveItems(items); addNotification(i.reporterId, `Your item "${i.name}" was approved!`); if(i.type==='found') addPoints(i.reporterId,10,'reporting found item'); refreshAll(); showAdminTab('pending'); } }
+function rejectItem(id){ let items=getItems(); let i=items.find(i=>i.id===id); if(i){ i.status='rejected'; saveItems(items); refreshAll(); showAdminTab('pending'); } }
+function toggleBlock(uid){ let users=getUsers(); let u=users.find(u=>u.id===uid); if(u){ u.isBlocked=!u.isBlocked; saveUsers(users); showAdminTab('users'); } }
+function addKw(){ let kw=document.getElementById('newKw').value.trim(); if(kw){ let kws=getKeywords(); if(!kws.includes(kw)) kws.push(kw); saveKeywords(kws); showAdminTab('keywords'); } }
+function removeKw(kw){ let kws=getKeywords().filter(k=>k!==kw); saveKeywords(kws); showAdminTab('keywords'); }
+function exportData(){ let data={ users:getUsers(), items:getItems(), claims:getClaims(), notifications:getNotifications() }; let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}); let a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='lostfound_backup.json'; a.click(); }
+function escapeHtml(s){ if(!s) return ''; return s.replace(/[&<>]/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]); }
+function showNotification(msg,type='success'){ let div=document.createElement('div'); div.className='notification'; div.innerHTML=`<i class="fas ${type==='success'?'fa-check-circle':'fa-exclamation-circle'}"></i> ${msg}`; document.getElementById('notificationContainer').appendChild(div); setTimeout(()=>div.remove(),3000); }
+
+// ----------------------------- INIT & THEME -----------------------------
+let saved=localStorage.getItem('currentUser');
+if(saved){ currentUser=JSON.parse(saved); let users=getUsers(); let valid=users.find(u=>u.id===currentUser.id && !u.isBlocked); if(valid){ currentUser=valid; document.getElementById('authSection').style.display='none'; document.getElementById('mainApp').style.display='block'; document.getElementById('userProfile').style.display='flex'; document.getElementById('userFullName').innerText=currentUser.name; document.getElementById('userAvatar').innerText=currentUser.name.charAt(0); document.getElementById('profileName').innerText=currentUser.name; document.getElementById('profileEmail').innerText=currentUser.email; document.getElementById('profilePhone').innerText=currentUser.phone; document.getElementById('profileId').innerText=currentUser.studentId; document.getElementById('profileAvatar').innerText=currentUser.name.charAt(0); updatePointsUI(); if(currentUser.isAdmin) document.getElementById('adminPanel').style.display='block'; refreshAll(); updateNotifBadge(); } else localStorage.removeItem('currentUser'); }
+document.getElementById('themeToggle').onclick=()=>{ document.body.classList.toggle('dark'); localStorage.setItem('theme', document.body.classList.contains('dark')?'dark':'light'); };
+if(localStorage.getItem('theme')==='dark') document.body.classList.add('dark');
+window.showLogin=showLogin; window.showRegister=showRegister; window.register=register; window.login=login; window.logout=logout; window.setItemType=setItemType; window.reportItem=reportItem; window.previewImage=previewImage; window.refreshAll=refreshAll; window.clearAllData=clearAllData; window.switchTab=switchTab; window.showContact=showContact; window.closeModal=closeModal; window.openClaimModal=openClaimModal; window.submitClaim=submitClaim; window.approveClaim=approveClaim; window.rejectClaim=rejectClaim; window.showAdminTab=showAdminTab; window.approveItem=approveItem; window.rejectItem=rejectItem; window.toggleBlock=toggleBlock; window.addKw=addKw; window.removeKw=removeKw; window.exportData=exportData;
+</script>
+</body>
+</html>
